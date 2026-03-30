@@ -1,0 +1,46 @@
+package dev.irakodes.app.seccertmgr.exception;
+
+import dev.irakodes.app.seccertmgr.entity.Certificate;
+import dev.irakodes.app.seccertmgr.entity.Customer;
+import dev.irakodes.app.seccertmgr.entity.Template;
+import dev.irakodes.app.seccertmgr.entity.TemplateVersion;
+
+public class ApplicationObjectNotFoundException extends RuntimeException {
+    public ApplicationObjectNotFoundException(String message) {
+        super(message);
+    }
+
+    protected ApplicationObjectNotFoundException(Object object) {
+        super(matchClass(object));
+    }
+
+    protected ApplicationObjectNotFoundException(Object object, Throwable cause) {
+        super(matchClass(object), cause);
+    }
+
+    protected ApplicationObjectNotFoundException(Object object, String message) {
+        super(message + ": " + matchClass(object));
+    }
+
+    private static <T> String matchClass(T object) {
+        var message = "";
+        if (object != null) {
+            if (object instanceof Certificate certificate) {
+                message = "A certificate with identifier " + certificate.getId() + " was not found";
+            }
+
+            if (object instanceof Template template) {
+                message = "Template with identifier " + template.getId() + " was not found";
+            }
+
+            if (object instanceof Customer customer) {
+                message = "A customer with identifier " + customer.getId() + " could not be found";
+            }
+
+            if (object instanceof TemplateVersion template) {
+                message = "Template version with ID " + template.getId() + " was not found";
+            }
+        }
+        return message;
+    }
+}
