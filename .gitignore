@@ -1,0 +1,119 @@
+#--------------------------------------------------#
+#      General/OS Files to Ignore                  #
+#--------------------------------------------------#
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+#--------------------------------------------------#
+#      IDE and Editor Files/Folders                #
+#--------------------------------------------------#
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+### VS Code ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+#--------------------------------------------------#
+#      Java/Spring Boot Backend Files              #
+#--------------------------------------------------#
+# Compiled output
+target/
+out/
+/build/
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.class
+
+# Maven/Gradle cache
+.gradle/
+.m2/
+
+# VM crash logs
+hs_err_pid*
+
+# Environment files and logs
+.env
+logs/
+*.log
+*.txt
+application.properties.example
+application.yml.example
+
+#--------------------------------------------------#
+#      Angular Frontend Files                      #
+#--------------------------------------------------#
+# Compiled output
+/dist
+/tmp
+/out-tsc
+
+# Dependencies
+/node_modules
+
+# Misc
+/.angular/cache
+/coverage
+npm-debug.log
+yarn-error.log
+testem.log
+
+/logs/
+/minio-data/
+/postgres-data/
+/bin/
+data/
+/logs/*
+/minio-data/*
+/postgres-data/*
+/bin/*
+data/*
+
+
+HELP.md
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
