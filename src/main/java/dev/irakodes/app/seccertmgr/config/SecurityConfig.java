@@ -38,7 +38,7 @@ import dev.irakodes.app.seccertmgr.security.SecurityExceptionHandlers;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("${app.base-url}")
+    @Value("${spring.application.base-url}")
     private String appBaseUrl;
 
     private final SecurityExceptionHandlers securityExceptionHandlers;

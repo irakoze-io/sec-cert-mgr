@@ -42,7 +42,7 @@ public class OpenApiConfig {
     @Value("${spring.application.name}")
     private String appName;
 
-    @Value("${app.base-url}")
+    @Value("${spring.application.base-url}")
     private String appUrl;
 
     @Bean

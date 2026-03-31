@@ -1,15 +1,16 @@
 package dev.irakodes.app.seccertmgr.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * RabbitMQ configuration for async PDF generation pipeline.
@@ -73,14 +74,14 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
+    public MessageConverter jsonMessageConverter(JsonMapper jsonMapper) {
+        return new JacksonJsonMessageConverter(jsonMapper);
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, JsonMapper jsonMapper) {
         var template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(jsonMessageConverter(objectMapper));
+        template.setMessageConverter(jsonMessageConverter(jsonMapper));
         template.setMandatory(true);
 
         template.setConfirmCallback((correlationData, ack, cause) -> {
@@ -102,10 +103,10 @@ public class RabbitMQConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+            ConnectionFactory connectionFactory, JsonMapper jsonMapper) {
         var factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(jsonMessageConverter(objectMapper));
+        factory.setMessageConverter(jsonMessageConverter(jsonMapper));
         factory.setConcurrentConsumers(2);
         factory.setMaxConcurrentConsumers(5);
         factory.setPrefetchCount(10);
