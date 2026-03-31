@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/changes/002-GLBL-AUDT-TBL.yaml
   - include:
       file: db/changelog/changes/003-ACTIVATE-UUID-OSSP.yaml
+  - include:
+      file: db/changelog/changes/004-CREATE-TENANT-SCHEMA-FUNCTION.yaml
