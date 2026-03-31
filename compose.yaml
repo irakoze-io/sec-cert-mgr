@@ -1,0 +1,55 @@
+name: 'Secure Certificate Manager | sec-cert-mgr v2.1.0'
+
+services:
+  postgres:
+    image: 'postgres:18.3'
+    environment:
+      - 'POSTGRES_DB=sec_cert_mgr'
+      - 'POSTGRES_USER=root'
+      - 'POSTGRES_PASSWORD=runPGSQLN0w'
+      - 'POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=en_US.utf8'
+      - 'PGDATA=/var/lib/postgresql/data/pgdata'
+      - 'TZ=Asia/Kolkata'
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+      - 'PG_MAJOR=18'
+      - 'PG_VERSION=18.3'
+      - 'PG_FULL_VERSION=18.3-1.pgdg1204+1'
+      - 'PG_PACKAGE_VERSION=18.3-1.pgdg1204+1'
+      - 'PG_GPG_KEY_ID=0399E4F9'
+      - 'PG_HOME=/var/lib/postgresql'
+      - 'PG_BIN=/usr/lib/postgresql/18/bin'
+      - 'PG_CONFIG=/usr/lib/postgresql/18/bin/pg_config'
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: 'rabbitmq:management'
+    environment:
+      - 'RABBITMQ_DEFAULT_USER=root'
+      - 'RABBITMQ_DEFAULT_PASS=runRMQN0w'
+      - 'RABBITMQ_DEFAULT_VHOST=/'
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+
+  minio:
+    image: 'minio/minio:latest'
+    command: server /data --console-address ":9001"
+    environment:
+      - 'MINIO_ROOT_USER=root'
+      - 'MINIO_ROOT_PASSWORD=runMinION0w'
+      - 'MINIO_ACCESS_KEY=root'
+      - 'MINIO_SECRET_KEY=runMinION0w'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./minio-data:/data
+
+volumes:
+  postgres-data:
+    driver: local
+  minio-data:
+    driver: local
