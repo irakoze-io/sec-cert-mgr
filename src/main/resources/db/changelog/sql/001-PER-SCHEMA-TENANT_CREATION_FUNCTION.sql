@@ -37,7 +37,7 @@ begin
             )', schema_name);
 
     -- Creation of Template Versions Table Per Tenant as SCHEMA
-    EXECUTE format('
+    execute format('
             create table %I.template_version (
                 id serial primary key,
                 template_id integer not null references %I.template(id) on delete cascade,
@@ -53,7 +53,8 @@ begin
                 constraint chk_version_status check (status IN (''DRAFT'', ''PUBLISHED'', ''ARCHIVED''))
             )', schema_name, schema_name);
 
-    EXECUTE format('
+    -- Creation of Certificates Table Per Tenant as SCHEMA
+    execute format('
             create table %I.certificate (
                 id serial primary key,
                 customer_id integer not null,
@@ -73,7 +74,8 @@ begin
                 constraint chk_certificate_status check (status IN (''PENDING'', ''PROCESSING'', ''ISSUED'', ''REVOKED'', ''FAILED''))
             )', schema_name, schema_name);
 
-    EXECUTE format('
+    -- Creation of Certificate Hashes Table Per Tenant as SCHEMA
+    execute format('
             create table %I.certificate_hash (
                 id serial primary key,
                 certificate_id integer unique not null references %I.certificate(id) on delete cascade,
@@ -84,7 +86,8 @@ begin
                 updated_at timestamp not null default now()
             )', schema_name, schema_name);
 
-    EXECUTE format('
+    -- Creation of Audit Log Table Per Tenant as SCHEMA
+    execute format('
             create table %I.audit_log (
                 id serial primary key,
                 customer_id integer not null,
@@ -99,17 +102,35 @@ begin
                 created_at timestamp not null default now()
             )', schema_name);
 
-    EXECUTE format('create index idx_%I_users_customer on %I.users(customer_id)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_users_email on %I.users(email)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_template_customer on %I.template(customer_id)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_template_code on %I.template(code)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_cert_number on %I.certificate(certificate_number)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_cert_status on %I.certificate(status)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_cert_issued_at on %I.certificate(issued_at DESC)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_cert_preview_generated_at on %I.certificate(preview_generated_at)', schema_name,
+    execute format('
+            create index idx_%I_users_customer on %I.users(customer_id)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_users_email on %I.users(email)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_template_customer on %I.template(customer_id)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_template_code on %I.template(code)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_cert_number on %I.certificate(certificate_number)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_cert_status on %I.certificate(status)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_cert_issued_at on %I.certificate(issued_at DESC)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_cert_preview_generated_at on %I.certificate(preview_generated_at)', schema_name,
                    schema_name);
-    EXECUTE format('create index idx_%I_audit_created_at on %I.audit_log(created_at DESC)', schema_name, schema_name);
-    EXECUTE format('create index idx_%I_audit_entity on %I.audit_log(entity_type, entity_id)', schema_name,
-                   schema_name);
+    execute format('
+            create index idx_%I_audit_created_at on %I.audit_log(created_at DESC)',
+                   schema_name, schema_name);
+    execute format('
+            create index idx_%I_audit_entity on %I.audit_log(entity_type, entity_id)',
+                   schema_name, schema_name);
 end;
 $function$ language plpgsql;
