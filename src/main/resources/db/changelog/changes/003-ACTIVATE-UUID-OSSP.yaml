@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: '003-ACTIVATE-UUID-OSSP'
+      author: system
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: create extension if not exists "uuid-ossp";
+            splitStatements: false
+      rollback:
+        - sql:
+            sql: drop extension if exists "uuid-ossp";
+            splitStatements: false

@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: '002-GLBL-AUDT-TBL'
+      author: system
+      dbms: postgresql
+      comment: Global Audit Table Creation
+      tags: ['audit', 'global']
+      contexts: ['core', 'security']
+      changes:
+        - createTable:
+            tableName: global_audit_log
+            schemaName: public
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  remarks: Unique identifier for each audit entry
+              - column:
+                  name: customer_id
+                  type: serial
+                  constraints:
+                    nullable: false
+                    #foreignKeyName: fk_global_audit_log_customer_id
+              - column:
+                  name: action
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: details
+                  type: JSONB
+              - column:
+                  name: ip_address
+                  type: INET
+              - column:
+                  name: user_agent
+                  type: varchar(50)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: now()
+        - addForeignKeyConstraint:
+            baseTableName: global_audit_log
+            baseTableSchemaName: public
+            baseColumnNames: customer_id
+            constraintName: fk_global_audit_log_customer
+            referencedTableName: customer
+            referencedTableSchemaName: public
+            referencedColumnNames: id
+        - createIndex:
+            tableName: global_audit_log
+            schemaName: public
+            indexName: idx_global_audit_customer
+            columns:
+              - column:
+                  name: customer_id
+              - column:
+                  name: created_at
+                  descending: true
+      rollback:
+        - dropTable:
+            tableName: global_audit_log
+            schemaName: public

@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: '004-CREATE-TENANT-SCHEMA-FUNCTION'
+      author: 'ivan.irakoze'
+      dbms: postgresql
+      comment: Tenant DDL is maintained in ../sql/001-per-schema-tenant_creation_function.sql (single source of truth)
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/001-per-schema-tenant_creation_function.sql
+            encoding: utf-8
+            relativeToChangelogFile: false
+            splitStatements: false
+            stripComments: false
+      rollback:
+        - sql:
+            sql: DROP FUNCTION IF EXISTS create_tenant_schema(varchar);
+            splitStatements: false

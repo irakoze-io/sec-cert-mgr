@@ -1,0 +1,33 @@
+package dev.irakodes.app.seccertmgr.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import dev.irakodes.app.seccertmgr.entity.User;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Repository for User entity with tenant schema support.
+ * All operations are scoped to the current tenant schema set in TenantContext.
+ */
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID>, UserRepositoryCustom {
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByKeycloakId(String keycloakId);
+
+    List<User> findByActiveTrue();
+
+    List<User> findByRole(User.UserRole role);
+
+    List<User> findByCustomerId(Long customerId);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByKeycloakId(String keycloakId);
+
+    long countByActiveTrue();
+}
