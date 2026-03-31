@@ -43,13 +43,35 @@ if [ ! -f "$GRADLE_FILE" ]; then
     exit 1
 fi
 
-# Read version from build.gradle
-VERSION=$(sed -nE "s/^version = '(.*)'$/\1/p" "$GRADLE_FILE")
+# Function to increment version (adapted from version.sh)
+get_next_version() {
+    local current_version=$(sed -nE "s/^version = '([0-9]+)\.([0-9]+)\.([0-9]+)'$/\1.\2.\3/p" "$GRADLE_FILE")
+    
+    if [ -z "$current_version" ]; then
+        echo -e "${RED}Error: Could not parse version in $GRADLE_FILE${NC}" >&2
+        exit 1
+    fi
 
-if [ -z "$VERSION" ]; then
-    echo -e "${RED}Error: Could not find version in $GRADLE_FILE${NC}"
-    exit 1
-fi
+    IFS=. read -r major minor patch <<EOF
+$current_version
+EOF
+
+    patch=$((patch + 1))
+
+    if [ "$patch" -gt 99 ]; then
+        patch=0
+        minor=$((minor + 1))
+    fi
+
+    if [ "$minor" -gt 99 ]; then
+        minor=0
+        major=$((major + 1))
+    fi
+
+    echo "${major}.${minor}.${patch}"
+}
+
+NEXT_VERSION=$(get_next_version)
 
 show_help() {
     cat << EOF
@@ -62,7 +84,7 @@ OPTIONS:
 
 EXAMPLES:
     # Release using release branch (recommended)
-    $0 -M "Release version $VERSION"
+    $0 -M "Release version $NEXT_VERSION"
 
     # Direct merge approach
     $0 -m direct
@@ -92,7 +114,7 @@ done
 
 # Default message
 if [ -z "$RELEASE_MESSAGE" ]; then
-    RELEASE_MESSAGE="Release version $VERSION"
+    RELEASE_MESSAGE="Release version $NEXT_VERSION"
 fi
 
 # Validate mode
@@ -106,7 +128,7 @@ echo -e "${BLUE}║           Git Flow Release Merge Script                 ║$
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${YELLOW}Configuration:${NC}"
-echo "  Version: $VERSION (from $GRADLE_FILE)"
+echo "  Next Version: $NEXT_VERSION"
 echo "  Mode: $MODE"
 echo "  Message: $RELEASE_MESSAGE"
 echo "  Branch: $CURRENT_BRANCH"
@@ -137,6 +159,16 @@ run_command() {
     echo ""
 }
 
+# Step 0: Increment version in build.gradle
+echo -e "${BLUE}→ Incrementing version in $GRADLE_FILE...${NC}"
+CURRENT_VERSION_STRING=$(sed -nE "s/^version = '(.*)'$/\1/p" "$GRADLE_FILE")
+sed -i.bak "s/^version = '${CURRENT_VERSION_STRING}'$/version = '${NEXT_VERSION}'/" "$GRADLE_FILE"
+rm "${GRADLE_FILE}.bak"
+
+# Step 0.1: Commit the version bump
+run_command "git add $GRADLE_FILE" "Staging $GRADLE_FILE"
+run_command "git commit -m 'chore: bump version to $NEXT_VERSION'" "Committing version bump"
+
 #############################################
 # DIRECT MERGE APPROACH
 #############################################
@@ -155,18 +187,18 @@ if [ "$MODE" = "direct" ]; then
     run_command "git merge develop --no-edit" "Merging develop into main"
 
     # Step 4: Create tag
-    run_command "git tag -a v$VERSION -m '$RELEASE_MESSAGE'" "Creating version tag v$VERSION"
+    run_command "git tag -a v$NEXT_VERSION -m '$RELEASE_MESSAGE'" "Creating version tag v$NEXT_VERSION"
 
     # Step 5: Push main and tag
     run_command "git push origin main" "Pushing main branch"
-    run_command "git push origin v$VERSION" "Pushing version tag"
+    run_command "git push origin v$NEXT_VERSION" "Pushing version tag"
 
     # Step 6: Merge main back into develop
     run_command "git checkout develop" "Switching back to develop"
     run_command "git merge main --no-edit" "Merging main back into develop"
     run_command "git push origin develop" "Pushing develop branch"
 
-    echo -e "${GREEN}Summary: Released version v$VERSION${NC}"
+    echo -e "${GREEN}Summary: Released version v$NEXT_VERSION${NC}"
     exit 0
 fi
 
@@ -177,7 +209,7 @@ if [ "$MODE" = "release-branch" ]; then
     echo -e "${YELLOW}Starting RELEASE BRANCH merge from develop → main${NC}"
     echo ""
 
-    RELEASE_BRANCH="release/$VERSION"
+    RELEASE_BRANCH="release/$NEXT_VERSION"
 
     # Step 1: Create and checkout release branch
     run_command "git pull origin develop" "Pulling latest develop"
@@ -186,24 +218,25 @@ if [ "$MODE" = "release-branch" ]; then
     # Step 2: Merge release branch into main
     run_command "git checkout main" "Switching to main"
     run_command "git pull origin main" "Pulling latest main"
-    run_command "git merge --no-ff $RELEASE_BRANCH -m 'Merge release/$VERSION into main'" "Merging release branch into main"
+    run_command "git merge --no-ff $RELEASE_BRANCH -m 'Merge $RELEASE_BRANCH into main'" "Merging release branch into main"
 
     # Step 3: Create tag
-    run_command "git tag -a v$VERSION -m '$RELEASE_MESSAGE'" "Creating version tag v$VERSION"
+    run_command "git tag -a v$NEXT_VERSION -m '$RELEASE_MESSAGE'" "Creating version tag v$NEXT_VERSION"
 
     # Step 4: Push main
     run_command "git push origin main" "Pushing main branch"
-    run_command "git push origin v$VERSION" "Pushing version tag"
+    run_command "git push origin v$NEXT_VERSION" "Pushing version tag"
 
     # Step 5: Merge release branch back into develop
     run_command "git checkout develop" "Switching to develop"
-    run_command "git merge --no-ff $RELEASE_BRANCH -m 'Merge release/$VERSION back into develop'" "Merging release branch back into develop"
+    run_command "git merge --no-ff $RELEASE_BRANCH -m 'Merge $RELEASE_BRANCH back into develop'" "Merging release branch back into develop"
     run_command "git push origin develop" "Pushing develop branch"
 
     # Step 6: Delete release branch
     run_command "git branch -d $RELEASE_BRANCH" "Deleting local release branch"
-    run_command "git push origin --delete $RELEASE_BRANCH" "Deleting remote release branch"
+    # Note: Only try to delete remote if it was pushed (which we didn't do here, but keeping for completeness if needed)
+    # run_command "git push origin --delete $RELEASE_BRANCH" "Deleting remote release branch"
 
-    echo -e "${GREEN}Summary: Released version v$VERSION${NC}"
+    echo -e "${GREEN}Summary: Released version v$NEXT_VERSION${NC}"
     exit 0
 fi
